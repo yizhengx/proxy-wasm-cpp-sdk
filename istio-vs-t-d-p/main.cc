@@ -62,7 +62,7 @@ uint64_t ExampleRootContext::getProcessingTime(){
     return processing_time;
 };
 
-uint64_t ExampleRootContext::getProcessingTime(){
+uint64_t ExampleRootContext::getProbablity(){
     return probability;
 };
 
@@ -116,6 +116,7 @@ bool ExampleRootContext::initializeSharedData(){
 bool ExampleRootContext::parseConfiguration(size_t configuration_size) {
     auto configuration_data = getBufferBytes(WasmBufferType::PluginConfiguration,
                                            0, configuration_size);
+    LOG_WARN("ParseConfig");
     std::string result = configuration_data->toString();
     // set default config
     delay=500;
