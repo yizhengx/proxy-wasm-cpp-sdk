@@ -16,13 +16,14 @@ namespace {
 void tooManyRequest() {
   sendLocalResponse(429, "Too many requests", "rate_limited", {});
 }
-}
-
 // Seed the random number generator
 std::random_device rd;
 std::mt19937 gen(rd());
 // Define the distribution (1 to 100)
 std::uniform_int_distribution<> dist(1, 100);
+}
+
+
 
 
 constexpr char sharedKey[] =
