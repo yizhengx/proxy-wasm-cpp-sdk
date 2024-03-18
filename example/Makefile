@@ -1,5 +1,5 @@
 PROXY_WASM_CPP_SDK=/sdk
 
-all: main.wasm
+all: example.wasm
 
 include ${PROXY_WASM_CPP_SDK}/Makefile.base_lite

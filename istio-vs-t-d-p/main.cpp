@@ -9,12 +9,21 @@
 #include "json.hpp"
 using json = nlohmann::json;
 
+
+
 namespace {
 // tooManyRequest returns a 429 response code.
 void tooManyRequest() {
   sendLocalResponse(429, "Too many requests", "rate_limited", {});
 }
 }
+
+// Seed the random number generator
+std::random_device rd;
+std::mt19937 gen(rd());
+// Define the distribution (1 to 100)
+std::uniform_int_distribution<> dist(1, 100);
+
 
 constexpr char sharedKey[] =
     "wasm_custom_logic.last_timeout";
@@ -167,12 +176,13 @@ std::chrono::microseconds ExampleContext::getTimeout(){
     std::chrono::microseconds val =
         *reinterpret_cast<const std::chrono::microseconds *>(last_timeout->data());
     std::chrono::microseconds timeout;
-    if (val <= std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::system_clock::now().time_since_epoch())){
-        // last timeout <= cur_time => queue is empty
-        timeout = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::system_clock::now().time_since_epoch()) 
+    int random_num = dist(gen);
+    if (random_num<=rootContext()->getProbablity()){
+        timeout = max(val, std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::system_clock::now().time_since_epoch())) 
             + std::chrono::microseconds(rootContext()->getProcessingTime());
     } else {
-        timeout = val + std::chrono::microseconds(rootContext()->getDelay()) + std::chrono::microseconds(rootContext()->getProcessingTime());
+        timeout = max(val, std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::system_clock::now().time_since_epoch())) 
+            + std::chrono::microseconds(rootContext()->getDelay()) + std::chrono::microseconds(rootContext()->getProcessingTime());
     }
     auto res = setSharedData(
         sharedKey,
