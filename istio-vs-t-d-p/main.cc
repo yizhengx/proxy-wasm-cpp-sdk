@@ -6,6 +6,8 @@
 #include "proxy_wasm_intrinsics.h"
 #include <map>
 #include <random>
+#include <cstdlib>
+#include <ctime>
 #include "json.hpp"
 using json = nlohmann::json;
 
@@ -16,13 +18,7 @@ namespace {
 void tooManyRequest() {
   sendLocalResponse(429, "Too many requests", "rate_limited", {});
 }
-// Seed the random number generator
-std::random_device rd;
-std::mt19937 gen(rd());
-// Define the distribution (1 to 100)
-std::uniform_int_distribution<> dist(1, 100);
 }
-
 
 
 
@@ -92,6 +88,7 @@ bool ExampleRootContext::onConfigure(size_t configuration_size) {
 
     queue_size = 1024;
 
+    std::srand(std::time(nullptr));
     return true;
 };
 
@@ -178,7 +175,7 @@ std::chrono::microseconds ExampleContext::getTimeout(){
     std::chrono::microseconds val =
         *reinterpret_cast<const std::chrono::microseconds *>(last_timeout->data());
     std::chrono::microseconds timeout;
-    int random_num = dist(gen);
+    int random_num = std::rand() % 100 + 1;
     if (random_num<=rootContext()->getProbablity()){
         timeout = max(val, std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::system_clock::now().time_since_epoch())) 
             + std::chrono::microseconds(rootContext()->getProcessingTime());
