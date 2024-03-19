@@ -178,10 +178,10 @@ std::chrono::microseconds ExampleContext::getTimeout(){
     int random_num = std::rand() % 100 + 1;
     if (random_num<=rootContext()->getProbablity()){
         timeout = max(val, std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::system_clock::now().time_since_epoch())) 
-            + std::chrono::microseconds(rootContext()->getProcessingTime());
+            + std::chrono::microseconds(rootContext()->getDelay()) + std::chrono::microseconds(rootContext()->getProcessingTime());
     } else {
         timeout = max(val, std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::system_clock::now().time_since_epoch())) 
-            + std::chrono::microseconds(rootContext()->getDelay()) + std::chrono::microseconds(rootContext()->getProcessingTime());
+            + std::chrono::microseconds(rootContext()->getProcessingTime());
     }
     auto res = setSharedData(
         sharedKey,
