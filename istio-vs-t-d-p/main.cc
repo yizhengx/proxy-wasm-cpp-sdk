@@ -193,8 +193,13 @@ std::chrono::microseconds ExampleContext::getTimeout(){
             get_res = getSharedData(sharedKey, &last_timeout, &cas);
         };
         val = *reinterpret_cast<const std::chrono::microseconds *>(last_timeout->data());
-        timeout = max(val, std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::system_clock::now().time_since_epoch()))
-            + std::chrono::microseconds(rootContext()->getDelay());
+        if (random_num<=rootContext()->getProbablity()){
+            timeout = max(val, std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::system_clock::now().time_since_epoch())) 
+                + std::chrono::microseconds(rootContext()->getDelay()) + std::chrono::microseconds(rootContext()->getProcessingTime());
+        } else {
+            timeout = max(val, std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::system_clock::now().time_since_epoch())) 
+                + std::chrono::microseconds(rootContext()->getProcessingTime());
+        }
         res = setSharedData(
             sharedKey,
             {reinterpret_cast<const char *>(&timeout), sizeof(timeout)}, cas);
