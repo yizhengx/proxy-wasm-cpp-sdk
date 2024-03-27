@@ -7,7 +7,6 @@
 #include <map>
 #include <random>
 #include<unistd.h>
-#include<thread>
 
 
 constexpr char incoming_counter_key[] =
@@ -16,7 +15,7 @@ constexpr char outgoing_counter_key[] =
     "wasm_custom_logic.outgoing_counter_key";
 constexpr char logger_init_key[] =
     "wasm_custom_logic.logger_init_key";
-std::thread::id thread_id = std::this_thread::get_id();
+
 
 class ExampleRootContext : public RootContext {
 public:
@@ -24,27 +23,31 @@ public:
     bool onConfigure(size_t) override;
     void onTick() override;
 private:
+    int thread_id;
     bool initializeSharedData();
 };
 
 bool ExampleRootContext::onConfigure(size_t configuration_size) {
     logWarn("onConfigure");
+    std::srand(time(NULL));
+    thread_id = rand();
     if (!initializeSharedData()){
         return false;
     }
     
-    sleep(2);
-    // Check if logger is initialized
-    WasmDataPtr logger_init_ptr;
-    if (WasmResult::Ok ==
-        getSharedData(logger_init_key, &logger_init_ptr)) {
-        return true;
-    }
-    std::thread::id logger_thread_id = *reinterpret_cast<const std::thread::id *>(logger_init_ptr->data());;
-    if (logger_thread_id==thread_id){
-        logWarn("set Tick");
-        proxy_set_tick_period_milliseconds(1000);
-    }
+    // sleep(2);
+    // // Check if logger is initialized
+    // WasmDataPtr logger_init_ptr;
+    // if (WasmResult::Ok ==
+    //     getSharedData(logger_init_key, &logger_init_ptr)) {
+    //     int logger_thread_id = *reinterpret_cast<const int *>(logger_init_ptr->data());;
+    //     if (logger_thread_id==thread_id){
+    //         logWarn("set Tick");
+    //         proxy_set_tick_period_milliseconds(1000);
+    //     }
+    // }
+    proxy_set_tick_period_milliseconds(1000);
+
 
     // Start ticker, which will triger request resumpton.
 
