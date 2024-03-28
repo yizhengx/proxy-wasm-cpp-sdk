@@ -128,7 +128,7 @@ void ExampleRootContext::onTick(){
     }
     if (now.count()>last_print_time.count()+1000000){
         if (incoming_counter!=0 || outgoing_counter!=0){
-            LOG_WARN("Time ["+std::to_string(now.count())+"]: incoming_counter="+std::to_string(incoming_counter)+" && outgoing_counter"+std::to_string(outgoing_counter));
+            LOG_WARN("Time ["+std::to_string(now.count())+"]: incoming_counter="+std::to_string(incoming_counter)+" && outgoing_counter="+std::to_string(outgoing_counter));
         }
         last_print_time = now;
         incoming_counter = 0;
@@ -140,6 +140,7 @@ class ExampleContext : public Context {
  public:
   explicit ExampleContext(uint32_t id, RootContext* root) : Context(id, root) {}
   FilterHeadersStatus onRequestHeaders(uint32_t, bool) override;
+  FilterHeadersStatus onResponseHeaders(uint32_t, bool) override;
 
  private:
   inline ExampleRootContext* rootContext() {
@@ -188,8 +189,14 @@ FilterHeadersStatus ExampleContext::onRequestHeaders(uint32_t, bool) {
     }
     std::chrono::microseconds timeout = getTimeout();
     rootContext()->pushRequest(id(), timeout);
+    rootContext()->incoming_counter += 1;
     return FilterHeadersStatus::StopAllIterationAndBuffer;
 };
+
+FilterHeadersStatus ExampleContext::onResponseHeaders(uint32_t, bool) {
+    rootContext()->outgoing_counter += 1;
+    return FilterHeadersStatus::Continue;
+}
 
 static RegisterContextFactory register_ExampleContext(CONTEXT_FACTORY(ExampleContext),
                                                       ROOT_FACTORY(ExampleRootContext),

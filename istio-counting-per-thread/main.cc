@@ -32,7 +32,7 @@ void ExampleRootContext::onTick(){
     );
     // log
     if (incoming_counter!=0 || outgoing_counter!=0){
-        LOG_WARN("Time ["+std::to_string(now.count())+"]: incoming_counter="+std::to_string(incoming_counter)+" && outgoing_counter"+std::to_string(outgoing_counter));
+        LOG_WARN("Time ["+std::to_string(now.count())+"]: incoming_counter="+std::to_string(incoming_counter)+" && outgoing_counter="+std::to_string(outgoing_counter));
     }
     incoming_counter = 0;
     outgoing_counter = 0;
