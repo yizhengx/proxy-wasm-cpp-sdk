@@ -57,6 +57,7 @@ void ExampleRootContext::pushRequest(uint32_t contextID, std::chrono::microsecon
 }
 
 bool ExampleRootContext::onConfigure(size_t configuration_size) {
+    logWarn("onConfigure - istio-original-vs-with-counting-per-thread");
     if (!parseConfiguration(configuration_size)) {
         return false;
     }
@@ -130,6 +131,8 @@ void ExampleRootContext::onTick(){
             LOG_WARN("Time ["+std::to_string(now.count())+"]: incoming_counter="+std::to_string(incoming_counter)+" && outgoing_counter"+std::to_string(outgoing_counter));
         }
         last_print_time = now;
+        incoming_counter = 0;
+        outgoing_counter = 0;
     }
 };
 

@@ -19,7 +19,7 @@ public:
 };
 
 bool ExampleRootContext::onConfigure(size_t configuration_size) {
-    logWarn("onConfigure");
+    logWarn("onConfigure - istio-counting-per-thread");
     proxy_set_tick_period_milliseconds(1000);
     return true;
 };
@@ -34,6 +34,8 @@ void ExampleRootContext::onTick(){
     if (incoming_counter!=0 || outgoing_counter!=0){
         LOG_WARN("Time ["+std::to_string(now.count())+"]: incoming_counter="+std::to_string(incoming_counter)+" && outgoing_counter"+std::to_string(outgoing_counter));
     }
+    incoming_counter = 0;
+    outgoing_counter = 0;
 };
 
 class ExampleContext : public Context {
