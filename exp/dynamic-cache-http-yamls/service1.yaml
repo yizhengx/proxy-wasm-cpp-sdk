@@ -1,0 +1,83 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+    name: config-service1
+    labels:
+        name: config-service1
+    namespace: hydragen
+data:
+    conf.json: '{"processes":10,"logging":false,"protocol":"http","endpoints":[{"name":"endpoint1","execution_mode":"sequential","cpu_complexity":{"execution_time":0.02,"threads":1}}]}'
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+    name: service1
+    namespace: hydragen
+    labels: {}
+spec:
+    selector:
+        matchLabels:
+            app: service1
+            version: ""
+    replicas: 1
+    template:
+        metadata:
+            labels:
+                app: service1
+                version: ""
+            annotations:
+                sidecar.istio.io/proxyCPU: 2000m
+                sidecar.istio.io/proxyCPULimit: 2000m
+                sidecar.istio.io/statsInclusionPrefixes: cluster.outbound,cluster_manager,listener_manager,http_mixer_filter,tcp_mixer_filter,server,cluster.xds-grp,listener,connection_manager
+                sidecar.istio.io/statsInclusionRegexps: http.*
+                sidecar.istio.io/userVolume: '[{"name":"rate-limit-filter","configMap":{"name":"rate-limit-filter"}}]'
+                sidecar.istio.io/userVolumeMount: '[{"mountPath":"/var/local/wasm","name":"rate-limit-filter"}]'
+        spec:
+            nodeName: worker1
+            containers:
+                - name: app
+                  image: yizhengx/hydragen:dynamic-cache-http
+                  imagePullPolicy: Always
+                  env:
+                    - name: SERVICE_NAME
+                      value: service1
+                    - name: GOMEMLIMIT
+                      value: "1024000000"
+                  ports:
+                    - containerPort: 5000
+                  volumeMounts:
+                    - mountPath: /usr/src/emulator/config
+                      name: config-data-volume
+                  readinessProbe:
+                    httpGet:
+                        path: /
+                        port: 5000
+                    initialDelaySeconds: 2
+                    periodSeconds: 1
+                  resources:
+                    limits:
+                        cpu: 1000m
+                        memory: 1024M
+                    requests:
+                        cpu: 1000m
+                        memory: 512M
+            volumes:
+                - name: config-data-volume
+                  configMap:
+                    name: config-service1
+---
+apiVersion: v1
+kind: Service
+metadata:
+    name: service1
+    namespace: hydragen
+    labels: {}
+    annotations:
+        http: /
+spec:
+    selector:
+        app: service1
+    ports:
+        - name: http
+          port: 80
+          targetPort: 5000
