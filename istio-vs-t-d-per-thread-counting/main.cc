@@ -32,7 +32,7 @@ public:
     bool isQueueFull();
     uint64_t getDelay();
     uint64_t getProcessingTime();
-    unit64_t incoming_counter;
+    uint64_t incoming_counter;
     uint64_t outgoing_counter;
 private:
     uint64_t queue_size;  
