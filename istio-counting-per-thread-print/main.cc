@@ -15,12 +15,13 @@ public:
     bool onConfigure(size_t) override;
     void onTick() override;
     uint64_t incoming_counter;
-    // uint64_t outgoing_counter;
+    uint64_t outgoing_counter;
+    std::chrono::microseconds target_time;
 };
 
 bool ExampleRootContext::onConfigure(size_t configuration_size) {
     logWarn("onConfigure - istio-counting-per-thread");
-    proxy_set_tick_period_milliseconds(1);
+    proxy_set_tick_period_milliseconds(1000);
     return true;
 };
 
@@ -31,10 +32,11 @@ void ExampleRootContext::onTick(){
         std::chrono::system_clock::now().time_since_epoch()
     );
     // log
-    if (incoming_counter!=0){
-        LOG_WARN("Incoming_counter="+std::to_string(incoming_counter));
+    if (incoming_counter!=0 || outgoing_counter!=0){
+        LOG_WARN("Time ["+std::to_string(now.count())+"]: incoming_counter="+std::to_string(incoming_counter)+" && outgoing_counter="+std::to_string(outgoing_counter));
     }
     incoming_counter = 0;
+    // outgoing_counter = 0;
 };
 
 class ExampleContext : public Context {
@@ -51,6 +53,7 @@ class ExampleContext : public Context {
 
 FilterHeadersStatus ExampleContext::onRequestHeaders(uint32_t, bool) {
     this->rootContext()->incoming_counter += 1;
+    
     return FilterHeadersStatus::Continue;
 };
 
